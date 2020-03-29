@@ -99,8 +99,8 @@ filtered2DFpowerNA2[index25,]
 
 `````
 
-So the cost 15, power and tougness 99 creature is called Big Furry Monster, apparently this is like a joke card.  
-The mana cost 0 but power and toughness >10 cards are the X's. so I guess another thing we can ignore
+So the cost 15, power and tougness 99 creature is called Big Furry Monster, apparently this is like a joke card. So we're filtering out all cards with set_type funny
+The mana cost 0 but power and toughness >10 cards are the X's. so I guess another thing we can ignore. It turns out that also there are all these token cards that we can filter out by the set_type "token", and those are also cmc=0, but power and toughness are very high. 
 
 ###Linear regression
 ```{r}
@@ -121,3 +121,97 @@ lm(filtered0Un2$powerAndTough ~ as.numeric(filtered0Un2$cmc))
 ggplot(filtered0Un2,aes(x=as.numeric(cmc),y=powerAndTough))+geom_point()+ geom_smooth(method='lm')
 
 ````
+
+So we can see from doing this linear regression that for each increase in cmc, it increases 1.44 in power+toughness. I wonder if it changes based on what color it is?
+
+```{r}
+#basically: use unnest for all except the colors and color_identity column
+#then separately use length==0 to filter out the nulls
+#then join the colors and color_identity columns
+#then unique to get the unique rows to get the filteredColors2OnlyUniq tibble
+load("filteredColors2OnlyUniq.RData")
+
+ggplot(filteredColors2OnlyUniq,aes(x=cmc,y=powerAndTough))+
+geom_point()+facet_wrap(~colors2,ncol=2)+stat_smooth(method="lm")
+
+
+#install.packages("ggpubr")
+library(ggpubr)
+
+
+#::::::::::::::::::::::::::::::::::::::::::::::::::::
+ggscatter(
+  filteredColors2OnlyUniq, x = "cmc", y = "powerAndTough",
+  color = "colors2", palette = "jco",
+  add = "reg.line"
+  ) +
+  facet_wrap(~colors2) +
+  stat_regline_equation(label.y = 4.2)
+
+
+
+#::::::::::::::::::::::::::::::::::::::::::::::::::::
+ggscatter(
+  filteredColors2OnlyUniq, x = "cmc", y = "powerNum",
+  color = "colors2", palette = "jco",
+  add = "reg.line"
+  ) +
+  facet_wrap(~colors2) +
+  stat_regline_equation(label.y = 4.2)
+
+#::::::::::::::::::::::::::::::::::::::::::::::::::::
+ggscatter(
+  filteredColors2OnlyUniq, x = "cmc", y = "toughnessNum",
+  color = "colors2", palette = "jco",
+  add = "reg.line"
+  ) +
+  facet_wrap(~colors2) +
+  stat_regline_equation(label.y = 4.2)
+
+
+
+
+
+````
+
+Note B=black and U=blue.
+For the most part the patterns are as we expect: green has the biggest creatures, although no color comes to a close second.
+
+Lake wants to see how should we cost the double greens etc. So first we need to mine it out
+
+````{R}
+#install.packages("stringr")
+library(stringr)
+patterndouble<-c("\\{B\\}\\{B\\}","\\{W\\}\\{W\\}","\\{U\\}\\{U\\}","\\{G\\}\\{G\\}","\\{R\\}\\{R\\}")
+patterndouble2<-paste(patterndouble,collapse="|")
+slashpatterns<-c("{R/G}{R/G}","{W/G}{W/G}","{B/G}{B/G}",
+                 "{B/R}{B/R}","{W/U}{W/U}","{W/U}{W/U}","{R/W}{R/W}",
+                "{B/W}{B/W}","{B/U}{B/U}","{W/B}{W/B}" )
+patternslash<-"\\/"
+extractedEvergreen<-str_detect(filteredColors2OnlyUniq$mana_cost,patterndouble2)
+
+A<-filteredColors2OnlyUniq[c(1:25),"mana_cost"]
+hasdouble<-str_detect(A,"\\{G\\}\\{G\\}")
+
+patterndoubleslash<-str_replace(patterndouble,"{","\\{")
+
+```````
+
+``````{R}
+# evergreen<-c("Activate","Attach","Cast","Counter","Create","Deathtouch","Defender","Destroy","Discard","Double strike","Enchant","Equip	Exchange	#Exile	Fight	First strike	Flash	Flying	Haste	Hexproof		Indestructible	Lifelink	Menace[9]	Play	Protection	#Reach	Reveal	Sacrifice	Scry	Search	Shuffle	Tap/Untap	Trample	Vigilance");
+
+evergreen<-read.csv(file="evergreen keywords.csv",header=T,sep=",",stringsAsFactors = F)
+
+
+patternEvergreen<-paste(evergreen$ï..Keyword,collapse="|")
+extractedEvergreen<-str_extract_all(filteredColors2OnlyUniq[,"oracle_text"],patternEvergreen)
+
+filteredColors2OnlyUniq$evergreen<-extractedEvergreen
+
+#why is there fight 3 times in one row?
+filteredColors2OnlyUniq[19,"oracle_text"]
+#not sure how to change that...
+
+
+
+```````````
