@@ -193,7 +193,7 @@ extractedEvergreen<-str_detect(filteredColors2OnlyUniq$mana_cost,patterndouble2)
 A<-filteredColors2OnlyUniq[c(1:25),"mana_cost"]
 hasdouble<-str_detect(A,"\\{G\\}\\{G\\}")
 
-patterndoubleslash<-str_replace(patterndouble,"{","\\{")
+
 
 ```````
 
