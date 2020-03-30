@@ -3,13 +3,13 @@ title: "Magic Cards Predictor"
 author: "Jane Shen, Lake Watkins"
 date: "March 24, 2020"
 
+
+---
 knit: (function(input_file, encoding) {
   out_dir <- 'docs';
   rmarkdown::render(input_file,
  encoding=encoding,
  output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
----
-
 
 
 ## Magic the Gathering
@@ -122,6 +122,7 @@ ggplot(filtered0Un2,aes(x=as.numeric(cmc),y=powerAndTough))+geom_point()+ geom_s
 
 ````
 
+
 So we can see from doing this linear regression that for each increase in cmc, it increases 1.44 in power+toughness. I wonder if it changes based on what color it is?
 
 ```{r}
@@ -215,3 +216,4 @@ filteredColors2OnlyUniq[19,"oracle_text"]
 
 
 ```````````
+
